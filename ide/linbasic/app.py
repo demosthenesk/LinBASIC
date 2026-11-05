@@ -97,6 +97,9 @@ def parse_args(argv):
 
 
 def server_name():
+    if os.name == "nt":
+        import re as _re
+        return "linbasic-" + _re.sub(r"[^A-Za-z0-9_-]", "_", os.environ.get("USERNAME", "user"))
     return "linbasic-%d" % os.getuid()
 
 

@@ -5,6 +5,7 @@ __pycache__/
 runtime/*.o
 runtime/libqbrt.a
 runtime/win/
+runtime/win32/
 packaging/icustub/libicudata.so.73
 
 # test output

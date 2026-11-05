@@ -1,4 +1,4 @@
-LinBASIC - QB 4.5 compatible BASIC compiler and IDE for Linux
+LinBASIC - QB 4.5 compatible BASIC compiler and IDE for Linux and Windows
 Copyright (C) 2026 Demosthenes Koptsis
 
 LinBASIC is free software: you can redistribute it and/or modify it under the
@@ -15,9 +15,19 @@ Third-party parts:
     x86_64-win32-tcc cross compiler (tinycc, LGPL-2.1, with its Windows import
     definitions and libtcc1) is bundled to make Windows programs.
   * glibc start files crt1.o/crti.o/crtn.o and libc_nonshared.a (LGPL with linking exception).
-No Microsoft file is included. The IDE can show the help files of the user's
-own QB 4.5 copy (QB45ADVR.HLP, QB45QCK.HLP, QB45ENER.HLP); they are read from
-the folder the user chooses and are not part of LinBASIC.
+  * Windows editions (win32/win64 zip files) also contain:
+    - Python 3.8 (PSF License), the Windows 7 compatible builds of
+      github.com/adang1345/PythonVista
+    - PyQt5 and QScintilla (GPL-3.0, Riverbank Computing), Qt 5.15 (LGPL-3.0, The Qt Company)
+    - regex (Apache-2.0)
+    - tcc.exe / libtcc.dll built from tinycc (LGPL-2.1) for Windows
+    - the Microsoft Visual C++ runtime DLLs that come with Python and Qt for Windows
+      (vcruntime140*.dll, msvcp140*.dll), which may be redistributed with applications
+    - the LinBASIC.exe / lbc.exe launchers, built with mingw-w64 (GCC runtime library exception)
+No QB 4.5 or other Microsoft program, help or documentation file is included.
+The IDE can show the help files of the user's own QB 4.5 copy (QB45ADVR.HLP,
+QB45QCK.HLP, QB45ENER.HLP); they are read from the folder the user chooses and
+are not part of LinBASIC.
 
 ------------------------------------------------------------------------------
 GNU GENERAL PUBLIC LICENSE

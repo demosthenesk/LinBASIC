@@ -1,10 +1,11 @@
 #!/bin/sh
 # build.sh - build the LinBASIC runtime library
 #   ./build.sh          runtime/libqbrt.a       for Linux programs (gcc)
-#   ./build.sh win      runtime/win/libqbrt.a   for Windows programs (TCCWIN = folder with x86_64-win32-tcc)
+#   ./build.sh win      runtime/win/libqbrt.a   for 64-bit Windows programs (TCCWIN = folder with x86_64-win32-tcc)
+#   ./build.sh win32    runtime/win32/libqbrt.a for 32-bit Windows programs (TCCWIN32 = folder with i386-win32-tcc)
 #   ./build.sh clean
 cd "$(dirname "$0")" || exit 1
-if [ "$1" = clean ]; then rm -f ./*.o libqbrt.a; rm -rf win; exit 0; fi
+if [ "$1" = clean ]; then rm -f ./*.o libqbrt.a; rm -rf win win32; exit 0; fi
 if [ "$1" = win ]; then
   W=${TCCWIN:?set TCCWIN to the folder with x86_64-win32-tcc and its include/lib}
   mkdir -p win
@@ -12,6 +13,15 @@ if [ "$1" = win ]; then
     "$W/x86_64-win32-tcc" -B"$W" -O2 -Wall -c $f.c -o win/$f.o || exit 1
   done
   rm -f win/libqbrt.a && "$W/x86_64-win32-tcc" -B"$W" -ar rcs win/libqbrt.a win/*.o && rm -f win/*.o && echo "runtime/win/libqbrt.a built"
+  exit 0
+fi
+if [ "$1" = win32 ]; then
+  W=${TCCWIN32:?set TCCWIN32 to the folder with i386-win32-tcc and its include/lib}
+  mkdir -p win32
+  for f in core print file screen display sound mem fonts win; do
+    "$W/i386-win32-tcc" -B"$W" -O2 -Wall -c $f.c -o win32/$f.o || exit 1
+  done
+  rm -f win32/libqbrt.a && "$W/i386-win32-tcc" -B"$W" -ar rcs win32/libqbrt.a win32/*.o && rm -f win32/*.o && echo "runtime/win32/libqbrt.a built"
   exit 0
 fi
 CC=${CC:-gcc}

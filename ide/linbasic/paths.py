@@ -15,9 +15,24 @@ def set_config_dir(path):
     _config_override = os.path.abspath(os.path.expanduser(path))
 
 
+def portable_dir():
+    """Windows portable edition: the settings folder next to the program, if writable."""
+    if os.name != "nt":
+        return None
+    home = os.environ.get("LINBASIC_HOME") or os.path.dirname(os.path.dirname(APP_DIR))
+    d = os.path.join(home, "settings")
+    if os.path.isdir(d) and os.access(d, os.W_OK):
+        return d
+    return None
+
+
 def config_dir():
     if _config_override:
         d = _config_override
+    elif portable_dir():
+        d = portable_dir()
+    elif os.name == "nt":
+        d = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "LinBASIC")
     else:
         base = os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config")
         d = os.path.join(base, "linbasic")

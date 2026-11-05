@@ -1,0 +1,27 @@
+#include <winver.h>
+1 ICON "linbasic.ico"
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION VER_MAJOR,VER_MINOR,VER_PATCH,0
+PRODUCTVERSION VER_MAJOR,VER_MINOR,VER_PATCH,0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0"
+    BEGIN
+      VALUE "CompanyName", "Demosthenes Koptsis"
+      VALUE "FileDescription", DESC
+      VALUE "FileVersion", VER_STR
+      VALUE "InternalName", NAME
+      VALUE "LegalCopyright", "GPL-3.0-or-later"
+      VALUE "OriginalFilename", NAME
+      VALUE "ProductName", "LinBASIC"
+      VALUE "ProductVersion", VER_STR
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1200
+  END
+END

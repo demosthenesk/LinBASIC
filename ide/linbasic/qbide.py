@@ -40,7 +40,18 @@ def linbasic_home():
     return os.path.dirname(os.path.dirname(here))
 
 
+WINDOWS = os.name == "nt"
+CREATE_NEW_CONSOLE = 0x00000010
+
+
 def cache_dir():
+    if WINDOWS:
+        from . import paths
+        pd = paths.portable_dir()
+        d = os.path.join(pd, "cache") if pd else \
+            os.path.join(os.environ.get("LOCALAPPDATA") or os.path.expanduser("~"), "LinBASIC", "cache")
+        os.makedirs(d, exist_ok=True)
+        return d
     base = os.environ.get("XDG_CACHE_HOME") or os.path.join(os.path.expanduser("~"), ".cache")
     d = os.path.join(base, "linbasic")
     os.makedirs(d, exist_ok=True)
@@ -135,7 +146,7 @@ class OutputPanel(QPlainTextEdit):
         super().__init__()
         self.qb = qb
         self.setReadOnly(True)
-        f = QFont("Monospace")
+        f = QFont("Consolas" if WINDOWS else "Monospace")
         f.setStyleHint(QFont.StyleHint.TypeWriter)
         self.setFont(f)
         self.setMaximumBlockCount(5000)
@@ -177,7 +188,7 @@ class HelpPanel(QWidget):
         self.view = QTextBrowser()
         self.view.setOpenLinks(False)
         self.view.anchorClicked.connect(self.on_link)
-        f = QFont("Monospace")
+        f = QFont("Consolas" if WINDOWS else "Monospace")
         f.setStyleHint(QFont.StyleHint.TypeWriter)
         self.view.setFont(f)
         lay.addWidget(self.view)
@@ -216,6 +227,8 @@ EXE_TARGETS = [
     ("win-window", "Windows \u2013 DOS window (.exe)"),
     ("win-cmd", "Windows \u2013 cmd console (.exe)"),
 ]
+if WINDOWS:                         # LinBASIC for Windows makes Windows programs only
+    EXE_TARGETS = EXE_TARGETS[2:]
 
 
 class MakeExeDialog(QDialog):
@@ -234,6 +247,8 @@ class MakeExeDialog(QDialog):
         for key, label in EXE_TARGETS:
             self.target.addItem(label, key)
         cur = opts.get("target") or ("linux-term" if opts.get("console") else "linux-window")
+        if WINDOWS and not cur.startswith("win"):
+            cur = "win-cmd" if opts.get("console") else "win-window"
         idx = max(0, [k for k, _ in EXE_TARGETS].index(cur) if cur in [k for k, _ in EXE_TARGETS] else 0)
         self.target.setCurrentIndex(idx)
         lay.addRow("Executable type:", self.target)
@@ -242,6 +257,7 @@ class MakeExeDialog(QDialog):
         self.hint.setStyleSheet("color: #555;")
         lay.addRow(self.hint)
         self.gcc = QCheckBox("Optimise with the system gcc (Linux; needs build-essential)")
+        self.gcc.setVisible(not WINDOWS)
         self.gcc.setChecked(opts.get("gcc", False))
         self.crlf = QCheckBox("Write text files with DOS line ends (CR+LF)")
         self.crlf.setChecked(opts.get("crlf", False))
@@ -297,6 +313,12 @@ class MakeExeDialog(QDialog):
             "win-cmd": "A Windows .exe for the cmd.exe console (text modes; graphics modes open a window). "
                        "Copy it to Windows 7 or later and start it from cmd.",
         }
+        if WINDOWS:
+            bits = "32-bit" if sys.maxsize < 2 ** 32 else "64-bit"
+            hints["win-window"] = ("A %s Windows .exe that opens its own DOS screen window (all SCREEN modes). "
+                                   "Double-click it to run it." % bits)
+            hints["win-cmd"] = ("A %s Windows .exe for the cmd.exe console (text modes; graphics modes "
+                                "open a window). Start it from cmd." % bits)
         self.hint.setText(hints[self.key()])
 
     def browse(self):
@@ -507,7 +529,7 @@ class QBSupport:
         p.start(args[0], args[1:])
 
     def exe_for(self, src, temporary=True):
-        base = os.path.splitext(os.path.basename(src))[0]
+        base = os.path.splitext(os.path.basename(src))[0] + (".exe" if WINDOWS else "")
         if temporary:
             d = os.path.join(cache_dir(), "run")
             os.makedirs(d, exist_ok=True)
@@ -548,6 +570,8 @@ class QBSupport:
             return
         windows = dlg.is_windows()
         self.S["qb_exe_target"] = dlg.key()
+        if WINDOWS:
+            self.S["qb_console"] = dlg.is_console()
         if not windows:
             self.S["qb_console"] = dlg.is_console()
             self.S["qb_gcc"] = dlg.gcc.isChecked()
@@ -564,7 +588,7 @@ class QBSupport:
         def done(ok):
             if ok:
                 self.output.add("Executable created: %s" % exe, "#007000")
-                if windows:
+                if windows and not WINDOWS:
                     self.output.add("This is a Windows program: copy it to a Windows PC (Windows 7 or later) to run it.", "#00007f")
                 if run:
                     self.run(exe, os.path.dirname(exe))
@@ -580,7 +604,17 @@ class QBSupport:
         if self.run_proc is not None and self.run_proc.state() != QProcess.ProcessState.NotRunning:
             self.run_proc.kill()
             self.run_proc.waitForFinished(1000)
-        if exe.lower().endswith(".exe"):
+        if WINDOWS and self.S["qb_console"]:
+            # a console program: its own cmd window, which stays open after the program ends
+            import subprocess
+            args = shlex.split(self.S["qb_command_args"], posix=False)
+            try:
+                subprocess.Popen(["cmd.exe", "/k", exe] + args, cwd=cwd, creationflags=CREATE_NEW_CONSOLE)
+                self.output.add("Started in a cmd window: %s" % exe, "#007000")
+            except OSError as e:
+                self.output.add("Could not start %s: %s" % (exe, e), "#c00000")
+            return
+        if exe.lower().endswith(".exe") and not WINDOWS:
             wine = shutil.which("wine") or shutil.which("wine64")
             if not wine:
                 self.output.add("%s is a Windows program. Install Wine to try it here, or copy it to Windows."
@@ -623,7 +657,7 @@ class QBSupport:
             self.output.add("Program ended (exit code %d)." % code, "#555")
         p.finished.connect(finished)
         p.readyReadStandardOutput.connect(lambda: self.output.add(bytes(p.readAllStandardOutput()).decode("utf-8", "replace").rstrip("\n")))
-        args = shlex.split(self.S["qb_command_args"])
+        args = shlex.split(self.S["qb_command_args"], posix=not WINDOWS)
         p.start(exe, args)
 
     def find_terminal(self):
@@ -906,7 +940,7 @@ class QBSupport:
     def about(self):
         from . import VERSION
         QMessageBox.about(self.win, "About LinBASIC",
-                          "<b>LinBASIC %s</b> — QB 4.5 compatible BASIC compiler and IDE for Linux<br><br>"
+                          "<b>LinBASIC %s</b> — QB 4.5 compatible BASIC compiler and IDE for Linux and Windows<br><br>"
                           "Compiler: lbc (BASIC → C → native x86-64 via the bundled Tiny C Compiler)<br>"
                           "Runtime: DOS screen emulation (SCREEN 0–13), PC speaker sound, DOS files<br>"
                           "Editor: Linpad++ (Notepad++ for Linux)<br><br>"

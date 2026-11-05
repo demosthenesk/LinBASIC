@@ -1,6 +1,6 @@
 # LinBASIC
 
-**A QB 4.5 compatible BASIC compiler and IDE for Linux — that can also build Windows programs.**
+**A QB 4.5 compatible BASIC compiler and IDE for Linux and Windows.**
 
 LinBASIC compiles classic DOS BASIC programs (the QB 4.5 dialect) into native x86-64
 executables for Linux or Windows, and comes with an IDE built on
@@ -19,6 +19,8 @@ numbers, same graphics, same files.
   their output redirected.
 * **Windows programs:** the same source becomes a Windows `.exe`, either with its own DOS
   window or as a `cmd.exe` console program.
+* **Runs on Windows too:** portable 32-bit and 64-bit editions of the IDE and compiler for
+  Windows 7 or later (see [Windows](#windows)).
 * **IDE:** Linpad++ with a **LinBASIC** menu:
   * Start (F5), Make EXE, Check Syntax and Modify COMMAND$
   * an error list that jumps to the line and marks it
@@ -31,6 +33,7 @@ numbers, same graphics, same files.
 * [Screenshots](#screenshots)
 * [Download](#download)
 * [Quick start](#quick-start)
+* [Windows](#windows)
 * [Examples](#examples)
 * [Help](#help)
 * [The compiler](#the-compiler)
@@ -82,14 +85,16 @@ own line editing.
 
 ## Download
 
-Get the AppImages of a release (one folder per version, e.g. `LinBASIC-1.0.4/`):
+Every [release](https://github.com/demosthenesk/LinBASIC/releases) has these files:
 
-| AppImage | Contents |
+| File | Contents |
 |---|---|
-| `LinBASIC-<version>-x86_64.AppImage` | IDE + compiler (the compiler also runs as `./LinBASIC-…AppImage lbc prog.bas`) |
-| `lbc-<version>-x86_64.AppImage` | the command-line compiler only |
+| `LinBASIC-<version>-x86_64.AppImage` | Linux: IDE + compiler (the compiler also runs as `./LinBASIC-…AppImage lbc prog.bas`) |
+| `lbc-<version>-x86_64.AppImage` | Linux: the command-line compiler only |
+| `LinBASIC-<version>-win32.zip` | Windows 7 or later, 32- or 64-bit: portable IDE + compiler, makes 32-bit programs |
+| `LinBASIC-<version>-win64.zip` | Windows 7 or later, 64-bit: portable IDE + compiler, makes 64-bit programs |
 
-They run on Ubuntu 24.04 and other current x86-64 Linux distributions.
+The AppImages run on Ubuntu 24.04 and other current x86-64 Linux distributions.
 
 ```sh
 chmod +x LinBASIC-1.0.4-x86_64.AppImage lbc-1.0.4-x86_64.AppImage
@@ -115,6 +120,32 @@ chmod +x LinBASIC-1.0.4-x86_64.AppImage lbc-1.0.4-x86_64.AppImage
 ./lbc-1.0.4-x86_64.AppImage --windows -o CLOCK.EXE examples/CLOCK.BAS             # Windows, DOS window
 ./lbc-1.0.4-x86_64.AppImage --windows --console -o PHONES.EXE examples/PHONES.BAS # Windows, cmd console
 ```
+
+## Windows
+
+The Windows editions are portable: extract the zip file anywhere you can write to (your
+Documents folder, a USB stick; not *Program Files*) and start `LinBASIC.exe`. Nothing is
+installed, and the settings stay in the `settings` folder next to it.
+
+```
+LinBASIC-1.0.4-win64\
+  LinBASIC.exe      the IDE
+  lbc.exe           the compiler:  lbc -o HELLO.EXE examples\HELLO.BAS
+                                   lbc --console -o GUESS.EXE examples\GUESS.BAS
+  examples\         the example programs
+  settings\         the IDE settings (portable mode)
+```
+
+* The IDE works as on Linux: **F5** compiles and runs the program, and **Make EXE File…** makes
+  a *Windows – DOS window* or *Windows – cmd console* program. The 32-bit edition makes 32-bit
+  programs, which run on every Windows from 7 on; the 64-bit edition makes 64-bit programs.
+* Windows 7 needs SP1 with the updates KB2533623 (or KB3063858) and KB2999226 (Universal C
+  Runtime), which Windows Update installs. Windows 8.1, 10 and 11 already have them.
+* Qt 6 needs Windows 10, so the Windows IDE runs on Qt 5.15 and Python 3.8, the last versions
+  for Windows 7 (`packaging/win/pyqt6shim` lets the PyQt6 code of the IDE run on PyQt5).
+  Programs are compiled with a Windows build of the bundled Tiny C Compiler.
+* The help works the same way: **LinBASIC → Help → Set Help Folder…** and your own QB 4.5
+  help files.
 
 ## Examples
 
@@ -394,7 +425,12 @@ sudo apt install build-essential tcc libx11-dev libxext-dev libpulse-dev \
 
 * `./build.sh appimages` also builds the `x86_64-win32-tcc` cross compiler from
   [tinycc](https://github.com/TinyCC/tinycc) and the Windows runtime.
-* The Windows runtime alone: `TCCWIN=<folder with x86_64-win32-tcc> sh runtime/build.sh win`.
+* The Windows runtime alone: `TCCWIN=<folder with x86_64-win32-tcc> sh runtime/build.sh win`
+  (64-bit) or `TCCWIN32=<folder with i386-win32-tcc> sh runtime/build.sh win32` (32-bit).
+* `./build.sh windows` (after `./build.sh appimages`) builds the portable Windows editions,
+  `build/LinBASIC-<version>/LinBASIC-<version>-win32.zip` and `-win64.zip`. It needs
+  `gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 binutils-mingw-w64 librsvg2-bin zip` and downloads
+  Python 3.8 for Windows and the PyQt5 wheels.
 * To run the IDE from the source tree: `cd ide && LINBASIC_HOME=.. python3 -m linbasic`
   (needs PyQt6, PyQt6-QScintilla and regex).
 
@@ -429,7 +465,8 @@ ide/linbasic/   the IDE (Linpad++ + qbide.py, qbhelp.py)
 tests/          comparison tests against BC.EXE
 examples/       example programs (see Examples above)
 docs/           screenshots used in this README
-packaging/      AppImage build script (also builds the x86_64-win32-tcc cross compiler)
+packaging/      AppImage build script (also builds the x86_64-win32-tcc cross compiler),
+                build-windows.sh and win/ (launchers, PyQt6-on-PyQt5 layer) for the Windows zips
 ```
 
 ## License
@@ -440,5 +477,6 @@ VGA fonts from DOSBox Staging, the binary-file decoder based on msbasic-savefile
 Tiny C Compiler).
 
 LinBASIC is an independent project. It is not affiliated with or endorsed by Microsoft and
-contains no Microsoft files. Microsoft, MS-DOS and Windows are trademarks of Microsoft
-Corporation.
+contains no QB 4.5 or other Microsoft program, help or documentation files (the Windows editions
+include only the redistributable Visual C++ runtime DLLs that come with Python and Qt).
+Microsoft, MS-DOS and Windows are trademarks of Microsoft Corporation.

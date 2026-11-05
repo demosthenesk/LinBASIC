@@ -172,6 +172,8 @@ class MainWindow(QMainWindow, EditMixin, SearchMixin, ViewMixin, MiscMixin, Auto
                 return False
         except AttributeError:
             pass
+        if os.name == "nt":                 # Windows 7 has no dark mode setting
+            return False
         env = {k: v for k, v in os.environ.items()}
         for k in ("LD_LIBRARY_PATH",):
             if os.environ.get("APPIMAGE"):
@@ -1629,6 +1631,13 @@ class MainWindow(QMainWindow, EditMixin, SearchMixin, ViewMixin, MiscMixin, Auto
         if b is None or not b.path:
             return
         d = os.path.dirname(b.path)
+        if os.name == "nt" and how in ("terminal", "pwsh"):
+            try:
+                subprocess.Popen(["cmd.exe"] if how == "terminal" else ["powershell.exe"], cwd=d,
+                                 creationflags=0x00000010)          # CREATE_NEW_CONSOLE
+            except OSError:
+                pass
+            return
         if how == "explorer":
             if not self._spawn(["xdg-open", d]):
                 QDesktopServices.openUrl(QUrl.fromLocalFile(d))
@@ -1649,6 +1658,15 @@ class MainWindow(QMainWindow, EditMixin, SearchMixin, ViewMixin, MiscMixin, Auto
             self.open_folder_as_workspace(d)
 
     def _spawn(self, args, cwd=None):
+        if os.name == "nt":
+            try:
+                if args and args[0] == "xdg-open":      # Windows: open with the associated program
+                    os.startfile(args[1])
+                else:
+                    subprocess.Popen(args, cwd=cwd, creationflags=0x00000008)   # DETACHED_PROCESS
+                return True
+            except OSError:
+                return False
         try:
             env = dict(os.environ)
             for k in ("LD_LIBRARY_PATH", "PYTHONHOME", "PYTHONPATH", "QT_PLUGIN_PATH", "QT_QPA_PLATFORM_PLUGIN_PATH"):

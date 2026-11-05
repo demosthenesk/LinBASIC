@@ -5,7 +5,7 @@ import os
 from . import paths
 
 DEFAULTS = {
-    "help_path": "", "qb_command_args": "", "qb_console": False, "qb_gcc": False, "qb_crlf": False, "qb_exe_target": "linux-window",
+    "help_path": "", "qb_command_args": "", "qb_console": False, "qb_gcc": False, "qb_crlf": False, "qb_exe_target": "win-window" if os.name == "nt" else "linux-window",
     # General / UI
     "localization": "english.xml",
     "toolbar_hidden": False,

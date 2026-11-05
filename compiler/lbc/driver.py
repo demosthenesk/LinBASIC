@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import shutil
+import struct
 import subprocess
 import tempfile
 
@@ -14,12 +15,17 @@ from . import qb45bin
 
 VERSION = "1.0.4"
 
-USAGE = """LinBASIC lbc %s - QB 4.5 compatible BASIC compiler for Linux
+IS_WIN = os.name == 'nt'                    # lbc itself running on Windows
+HOST_BITS = struct.calcsize('P') * 8
+NO_WINDOW = 0x08000000 if IS_WIN else 0      # CREATE_NO_WINDOW for the C back end
+
+USAGE = """LinBASIC lbc %s - QB 4.5 compatible BASIC compiler for Linux and Windows
 
 usage: lbc [options] FILE.BAS
   -o FILE        output executable (default: FILE without .BAS, FILE.exe for Windows)
-  --target linux|windows
-                 build a Linux program (default) or a Windows .exe
+  --target linux|windows|win32
+                 build a Linux program (default on Linux), a Windows .exe (default on
+                 Windows) or a 32-bit Windows .exe
   --windows      same as --target windows
   -c             only generate C source (FILE.c)
   -C             keep the generated C source next to the program
@@ -196,27 +202,51 @@ def find_libc():
     return None, None
 
 
-def find_tccwin_kit():
-    """Locate the x86_64-win32-tcc cross compiler used for Windows programs."""
+def win_bits(opts):
+    """32 or 64: the kind of Windows program to make."""
+    if opts.get('win_bits'):
+        return opts['win_bits']
+    return HOST_BITS if IS_WIN else 64
+
+
+def find_tccwin_kit(bits=64):
+    """Locate the C compiler for Windows programs: (folder, compiler).
+
+    On Windows it is the bundled tcc.exe (it makes programs of its own bitness);
+    on Linux the x86_64-win32-tcc / i386-win32-tcc cross compilers."""
+    if IS_WIN:
+        kit = os.path.join(home_dir(), 'tcc')
+        tcc = os.path.join(kit, 'tcc.exe')
+        if os.path.exists(tcc) and bits == HOST_BITS:
+            return kit, tcc
+        return None, None
+    name = 'x86_64-win32-tcc' if bits == 64 else 'i386-win32-tcc'
     for kit in (os.environ.get('LINBASIC_TCCWIN'), os.path.join(home_dir(), 'tccwin')):
-        if kit and os.path.exists(os.path.join(kit, 'x86_64-win32-tcc')):
-            return kit
-    return None
+        if kit and os.path.exists(os.path.join(kit, name)):
+            return kit, os.path.join(kit, name)
+    return None, None
 
 
 def build_exe_windows(csrc_path, out_path, opts):
     rt = find_runtime()
-    lib = os.path.join(rt, 'win', 'libqbrt.a')
+    bits = win_bits(opts)
+    sub = 'win' if bits == 64 else 'win32'
+    lib = os.path.join(rt, sub, 'libqbrt.a')
     if not os.path.exists(lib):
-        raise QBError("the Windows runtime (runtime/win/libqbrt.a) is not installed")
-    kit = find_tccwin_kit()
+        raise QBError("the %d-bit Windows runtime (runtime/%s/libqbrt.a) is not installed" % (bits, sub))
+    kit, tcc = find_tccwin_kit(bits)
     if not kit:
-        raise QBError("the Windows C back end (tccwin/x86_64-win32-tcc) is not installed")
-    cmd = [os.path.join(kit, 'x86_64-win32-tcc'), '-B' + kit, '-w', '-I', rt, '-o', out_path, csrc_path, lib,
+        if IS_WIN:
+            raise QBError("this LinBASIC makes %d-bit Windows programs only" % HOST_BITS
+                          if os.path.exists(os.path.join(home_dir(), 'tcc', 'tcc.exe'))
+                          else "the C back end (tcc\\tcc.exe) is not installed")
+        raise QBError("the Windows C back end (tccwin/%s) is not installed"
+                      % ('x86_64-win32-tcc' if bits == 64 else 'i386-win32-tcc'))
+    cmd = [tcc, '-B' + kit, '-w', '-I', rt, '-o', out_path, csrc_path, lib,
            '-luser32', '-lgdi32', '-lwinmm']
     if not opts.get('console'):
         cmd.append('-Wl,-subsystem=windows')      # a window program: no console window
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    r = subprocess.run(cmd, capture_output=True, text=True, creationflags=NO_WINDOW)
     if r.returncode != 0:
         raise QBError("C back end failed:\n" + (r.stderr or r.stdout))
     return out_path
@@ -225,6 +255,8 @@ def build_exe_windows(csrc_path, out_path, opts):
 def build_exe(csrc_path, out_path, opts):
     if opts.get('target') == 'windows':
         return build_exe_windows(csrc_path, out_path, opts)
+    if IS_WIN:
+        raise QBError("Linux programs can only be made with LinBASIC for Linux")
     rt = find_runtime()
     lib = os.path.join(rt, 'libqbrt.a')
     if opts.get('gcc'):
@@ -281,10 +313,15 @@ def main(argv=None):
             t = t.lower()
             if t in ('win', 'win64', 'windows'):
                 opts['target'] = 'windows'
+                if t == 'win64':
+                    opts['win_bits'] = 64
+            elif t in ('win32', 'windows32'):
+                opts['target'] = 'windows'
+                opts['win_bits'] = 32
             elif t in ('linux', 'lin'):
                 opts['target'] = 'linux'
             else:
-                print(f"lbc: unknown target {t!r} (use linux or windows)", file=sys.stderr)
+                print(f"lbc: unknown target {t!r} (use linux, windows or win32)", file=sys.stderr)
                 return 2
         elif a == '--crlf':
             opts['crlf'] = True
@@ -311,6 +348,8 @@ def main(argv=None):
     if not src:
         print(USAGE)
         return 2
+    if IS_WIN and not opts.get('target'):
+        opts['target'] = 'windows'            # on Windows, Windows programs by default
     if opts.get('target') == 'windows':
         if opts.get('gcc'):
             print("lbc: -O (gcc) is only available for Linux programs", file=sys.stderr)
@@ -364,7 +403,7 @@ def main(argv=None):
             shutil.rmtree(tmpdir, ignore_errors=True)
     if run:
         prog = [os.path.abspath(exe)]
-        if opts.get('target') == 'windows':
+        if opts.get('target') == 'windows' and not IS_WIN:
             wine = shutil.which('wine') or shutil.which('wine64')
             if not wine:
                 print(f"lbc: {exe} is a Windows program; copy it to Windows to run it (or install wine)", file=sys.stderr)
