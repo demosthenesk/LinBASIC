@@ -10,8 +10,10 @@
   <rect x="8" y="34" width="240" height="18" fill="#b8b8b8"/>
   <circle cx="44" cy="30" r="8" fill="#0000a0"/>
   <rect x="62" y="24" width="70" height="12" rx="3" fill="#0000a0" opacity="0.55"/>
-  <text x="128" y="170" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-weight="bold"
-        font-size="104" fill="#ffffff">QB</text>
+  <text x="128" y="110" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-weight="bold"
+        font-size="50" fill="#ffff55">Lin</text>
+  <text x="128" y="168" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-weight="bold"
+        font-size="60" fill="#ffffff">BASIC</text>
   <rect x="58" y="196" width="140" height="14" fill="#ffff55"/>
-  <rect x="200" y="182" width="22" height="28" fill="#ffffff" opacity="0.9"/>
+  <rect x="200" y="188" width="22" height="22" fill="#ffffff" opacity="0.9"/>
 </svg>
