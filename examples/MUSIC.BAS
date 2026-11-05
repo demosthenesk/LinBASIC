@@ -1,0 +1,9 @@
+' MUSIC.BAS - PLAY and SOUND
+PRINT "Playing a tune..."
+PLAY "T160 O3 L8 E D C D E E E4 D D D4 E G G4"
+PRINT "Siren..."
+FOR i = 1 TO 2
+  FOR f = 400 TO 1200 STEP 40: SOUND f, .5: NEXT
+  FOR f = 1200 TO 400 STEP -40: SOUND f, .5: NEXT
+NEXT
+BEEP

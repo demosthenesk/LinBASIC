@@ -1,0 +1,9 @@
+ 6 
+ 6 
+ 7 
+second first
+ 6765 fedcba
+ 1  4  9  16  25 
+ 1  2  3 
+ 42 shared
+ 49  9  10 

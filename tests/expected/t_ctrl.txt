@@ -1,0 +1,21 @@
+ 13  12  11  23  22  21  33  32  31 
+ 0  .25  .5  .75  1  1.25 
+k= 5 
+ 5 
+-1 
+ 7 
+ 12 
+i= 4 
+onetwo-threetwo-threefour-fivefour-fiveelse
+second
+lt20
+eq!
+nested
+gosub
+gosub
+a1
+a2
+a3
+l2
+line10
+line30

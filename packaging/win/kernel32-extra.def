@@ -1,0 +1,8 @@
+; Vista+ synchronisation functions used by the LinBASIC Windows runtime
+AcquireSRWLockExclusive
+ReleaseSRWLockExclusive
+SleepConditionVariableSRW
+WakeConditionVariable
+WakeAllConditionVariable
+InitializeConditionVariable
+InitializeSRWLock

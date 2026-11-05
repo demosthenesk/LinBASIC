@@ -1,0 +1,11 @@
+Error 11 at 0 
+after div
+Error 53 at 0 
+after open
+Error 57 at 0 
+after error 57
+Error 5 at 0 
+after mid
+Error 5 at 100 
+count 1 
+done

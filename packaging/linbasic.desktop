@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=LinBASIC
+GenericName=BASIC IDE
+Comment=QB 4.5 compatible BASIC compiler and IDE for Linux
+Exec=linbasic %F
+Icon=linbasic
+Terminal=false
+Categories=Development;IDE;
+MimeType=text/x-basic;text/x-qbasic;
+StartupWMClass=linbasic

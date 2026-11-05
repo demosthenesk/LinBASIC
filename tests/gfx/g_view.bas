@@ -1,0 +1,27 @@
+SCREEN 13
+VIEW (40, 20)-(279, 179), 1, 15
+WINDOW (-10, -10)-(10, 10)
+LINE (-10, 0)-(10, 0), 14
+LINE (0, -10)-(0, 10), 14
+CIRCLE (0, 0), 5, 12
+CIRCLE (3, 3), 2, 10
+PSET (-5, 5), 15
+LINE (-8, -8)-(-4, -4), 13, BF
+PAINT (0, 0), 2, 12
+WINDOW SCREEN (0, 0)-(100, 100)
+LINE (10, 10)-(30, 30), 11, B
+VIEW
+WINDOW
+LINE (0, 190)-(50, 199), 7, BF
+DIM a(300) AS INTEGER
+GET (0, 190)-(20, 199), a
+PUT (100, 185), a, XOR
+PUT (105, 187), a, XOR
+OPEN "OUT.TXT" FOR OUTPUT AS #1
+FOR y = 0 TO 199
+ r$ = ""
+ FOR x = 0 TO 319: r$ = r$ + CHR$(48 + (POINT(x, y) AND 63)): NEXT
+ PRINT #1, r$
+NEXT
+PRINT #1, PMAP(0, 0); PMAP(0, 1); POINT(0); POINT(1)
+CLOSE

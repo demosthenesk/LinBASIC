@@ -1,0 +1,10 @@
+ 0420   0090    REDIM c(3): PRINT #1, c(3); UBOUND(c)
+                          ^ AS clause required
+ 0467   0090    q(3) = 4: PRINT #1, q(3); UBOUND(q)
+                   ^ Array not dimensioned
+
+44045 Bytes Available
+42450 Bytes Free
+
+    1 Warning Error(s)
+    1 Severe  Error(s)

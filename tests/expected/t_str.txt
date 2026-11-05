@@ -1,0 +1,18 @@
+Hello|World|World|llo,||
+ 5  9  0  1  0 
+[ab  ][  ab]
+MIXED CASE 123mixed case
+[   ]*****AAA 0  12 
+ 65 a 200 
+HELLO, World
+HELLO, WORLD
+[abc       ]
+[       abc]
+-1234  123456789  1.5  1024 
+ 2  8 
+ 3.25 -12.5 
+abc abcdef
+[abcdef] 6 
+[xy    ]
+ABCDE
+-1 -1 

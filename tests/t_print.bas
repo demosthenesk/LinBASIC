@@ -1,0 +1,15 @@
+OPEN "OUT.TXT" FOR OUTPUT AS #1
+PRINT #1, 1; -1; 0; 32767; -32768; 100000; -2147483647
+PRINT #1, 1.5; -1.5; .25; 1E+20; 1.5E-20; 123456.7; 1234567!; 3.5!
+PRINT #1, 1 / 3; 2 / 3; 10 / 4; 1# / 7; 1D+300 = 0; 12345678# = 0; 0.5!
+PRINT #1, "a", "b", "c"; "d"; : PRINT #1, "e"
+PRINT #1, "x"; TAB(10); "y"; TAB(5); "z"
+PRINT #1, "p"; SPC(4); "q"
+PRINT #1, STR$(42); STR$(-42); STR$(1.5); STR$(1 / 3); STR$(1D-5)
+PRINT #1, VAL("123"); VAL(" 1 2 3 "); VAL("1.5E3"); VAL("&O17"); VAL("abc"); VAL("-3.25x")
+PRINT #1, HEX$(255); HEX$(-1); HEX$(65536); OCT$(8); OCT$(-1)
+PRINT #1, 1E+15; 1E+16; 12345#; 1234567890123456#
+PRINT #1, -0.000001; 9999999!; 99999999!
+WRITE #1, 1, "two", 3.5, -4
+PRINT #1, CINT(2.5); CINT(-2.5); CINT(1.5); CLNG(2.5); INT(2.7); INT(-2.7); FIX(-2.7)
+CLOSE

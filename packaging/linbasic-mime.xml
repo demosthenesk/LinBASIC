@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="text/x-qbasic">
+    <comment>BASIC source code</comment>
+    <glob pattern="*.bas"/>
+    <glob pattern="*.BAS"/>
+    <glob pattern="*.bi"/>
+    <glob pattern="*.BI"/>
+  </mime-type>
+</mime-info>

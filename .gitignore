@@ -1,0 +1,22 @@
+# build output
+/build/
+__pycache__/
+*.pyc
+runtime/*.o
+runtime/libqbrt.a
+runtime/win/
+packaging/icustub/libicudata.so.73
+
+# test output
+tests/work/
+tests/gfx/*.actual
+tests/gfx/*_cmp.png
+tests/gfx/OUT.TXT
+tests/gfx/g_circ
+tests/gfx/g_lines
+tests/gfx/g_prims
+tests/gfx/g_view
+
+# help files of QB 4.5 are never part of the repository
+*.HLP
+*.hlp

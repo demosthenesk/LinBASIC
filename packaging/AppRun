@@ -1,0 +1,26 @@
+#!/bin/sh
+# LinBASIC AppImage entry point: the IDE, or the compiler with "lbc" as first argument
+HERE="$(dirname "$(readlink -f "$0")")"
+export LINBASIC_HOME="$HERE/usr/share/linbasic"
+export LD_LIBRARY_PATH_ORIG="${LD_LIBRARY_PATH:-}"
+export QT_PLUGIN_PATH_ORIG="${QT_PLUGIN_PATH:-}"
+unset PYTHONHOME PYTHONPATH
+PY="$HERE/usr/bin/python3.12"
+case "$(basename "${ARGV0:-$0}")" in
+  lbc|lbc.*) exec "$PY" -I "$LINBASIC_HOME/compiler/lbc.py" "$@" ;;
+esac
+if [ "${1:-}" = "lbc" ] || [ "${1:-}" = "--lbc" ]; then
+  shift
+  exec "$PY" -I "$LINBASIC_HOME/compiler/lbc.py" "$@"
+fi
+export LD_LIBRARY_PATH="$LINBASIC_HOME/lib/PyQt6/Qt6/lib:$HERE/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+unset QT_PLUGIN_PATH
+# the bundled Qt has no Wayland plugin: use X11 / XWayland (also used by the DOS screen windows)
+export QT_QPA_PLATFORM="${QT_QPA_PLATFORM_LINBASIC:-xcb}"
+exec "$PY" -I -c '
+import sys, os
+sys.path.insert(0, os.path.join(os.environ["LINBASIC_HOME"], "lib"))
+sys.argv[0] = os.environ.get("APPIMAGE", "linbasic")
+from linbasic.app import main
+sys.exit(main())
+' "$@"

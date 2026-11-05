@@ -1,0 +1,8 @@
+ 03AD   000E    PRINT #1, -1 AND 32767; &HFFFF; &HFFFF&; &H7FFF + 1
+                                                                   ^ Math overflow
+
+44045 Bytes Available
+42460 Bytes Free
+
+    0 Warning Error(s)
+    1 Severe  Error(s)

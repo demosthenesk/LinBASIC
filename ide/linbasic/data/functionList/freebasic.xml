@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<NotepadPlus>
+	<functionList>
+		<parser
+			displayName="BASIC"
+			id         ="basic_procedures"
+			commentExpr="(?m-s:(?:'|\bREM\b).*?$)"
+		>
+			<function
+				mainExpr="(?im-s)^\h*(?:SUB|FUNCTION|DEF\h+FN)\h*\K[A-Za-z][\w.]*[$%&amp;!#]?"
+			>
+				<functionName>
+					<nameExpr expr=".*" />
+				</functionName>
+			</function>
+		</parser>
+	</functionList>
+</NotepadPlus>
